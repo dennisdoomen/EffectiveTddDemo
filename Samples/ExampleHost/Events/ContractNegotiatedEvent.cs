@@ -2,7 +2,7 @@
 
 namespace LiquidProjections.ExampleHost.Events
 {
-    internal class ContractNegotiatedEvent
+    public class ContractNegotiatedEvent
     {
         public string Number { get; set; }
         public string Kind { get; set; }

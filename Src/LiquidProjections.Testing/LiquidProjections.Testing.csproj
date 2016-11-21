@@ -45,6 +45,7 @@
     <Compile Include="..\..\SharedAssemblyInfo.cs">
       <Link>SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="DispatcherSpy.cs" />
     <Compile Include="EnumerableExtensions.cs" />
     <Compile Include="InMemoryEventStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -54,6 +55,9 @@
       <Project>{20506f22-9a20-4c07-b3df-163ca338030f}</Project>
       <Name>LiquidProjections</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".nuspec" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -32,7 +32,7 @@ namespace LiquidProjections.ExampleHost
                     .Where(x => x.Kind == kind && x.Country == country)
                     .As<DocumentCountProjection>();
 
-                string countryName = (await session.LoadAsync<CountryLookup>(country.ToString())).Name;
+                string countryName = (await session.LoadAsync<CountryLookup>($"CountryLookup/{country}")).Name;
 
                 var evaluator = new RealtimeStateEvaluator();
 

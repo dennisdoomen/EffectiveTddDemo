@@ -1,21 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Runtime.Serialization.Formatters;
-using System.Threading.Tasks;
-using System.Web.Http;
-using System.Web.Http.Dispatcher;
 using Microsoft.Owin.Hosting;
-using Newtonsoft.Json;
-using Owin;
-using Raven.Client;
 using Raven.Client.Embedded;
 using Raven.Client.Indexes;
 using Raven.Database.Server;
-using TinyIoC;
 
 namespace LiquidProjections.ExampleHost
 {
@@ -23,19 +11,16 @@ namespace LiquidProjections.ExampleHost
     {
         public static void Main(string[] args)
         {
-            var container = TinyIoCContainer.Current;
-
             var eventStore = new JsonFileEventStore("ExampleEvents.zip", 100);
 
             EmbeddableDocumentStore store = BuildDocumentStore(".\\", 9001);
 
-            container.Register<Func<IAsyncDocumentSession>>(() => store.OpenAsyncSession());
             var dispatcher = new Dispatcher(eventStore);
 
-            var bootstrapper = new CountsProjectionBootstrapper(dispatcher, store.OpenAsyncSession);
+            var bootstrapper = new CountsProjector(dispatcher, store.OpenAsyncSession);
 
             var startOptions = new StartOptions($"http://localhost:9000");
-            using (WebApp.Start(startOptions, builder => builder.UseControllers(container)))
+            using (WebApp.Start(startOptions, builder => builder.UseStatistics(() => store.OpenAsyncSession())))
             {
                 bootstrapper.Start().Wait();
 
@@ -88,39 +73,6 @@ namespace LiquidProjections.ExampleHost
             IndexCreation.CreateIndexes(typeof(Program).Assembly, documentStore);
 
             return documentStore;
-        }
-
-        internal static IAppBuilder UseControllers(this IAppBuilder app, TinyIoCContainer container)
-        {
-            HttpConfiguration configuration = BuildHttpConfiguration(container);
-            app.Map("/api", a => a.UseWebApi(configuration));
-
-            return app;
-        }
-
-        private static HttpConfiguration BuildHttpConfiguration(TinyIoCContainer container)
-        {
-            var configuration = new HttpConfiguration
-            {
-                DependencyResolver = new TinyIocWebApiDependencyResolver(container),
-                IncludeErrorDetailPolicy = IncludeErrorDetailPolicy.Always
-            };
-
-            configuration.Services.Replace(typeof(IHttpControllerTypeResolver), new ControllerTypeResolver());
-            configuration.MapHttpAttributeRoutes();
-
-            return configuration;
-        }
-
-        internal class ControllerTypeResolver : IHttpControllerTypeResolver
-        {
-            public ICollection<Type> GetControllerTypes(IAssembliesResolver assembliesResolver)
-            {
-                return new List<Type>
-                {
-                    typeof(StatisticsController)
-                };
-            }
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace LiquidProjections.ExampleHost.Events
 {
-    internal class ValidityPeriodApprovedEvent
+    public class ValidityPeriodApprovedEvent
     {
         public string DocumentNumber { get; set; }
         public int Sequence { get; set; }

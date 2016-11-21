@@ -2,7 +2,7 @@
 
 namespace LiquidProjections.ExampleHost.Events
 {
-    internal class LicenseGrantedEvent
+    public class LicenseGrantedEvent
     {
         public string Number { get; set; }
         public string Kind { get; set; }

@@ -6,7 +6,7 @@ using LiquidProjections.Logging;
 
 namespace LiquidProjections
 {
-    public class Dispatcher
+    public class Dispatcher : IDispatcher
     {
         private readonly IEventStore eventStore;
 
@@ -20,7 +20,7 @@ namespace LiquidProjections
             this.eventStore = eventStore;
         }
 
-        public IDisposable Subscribe(long? checkpoint, Func<IReadOnlyList<Transaction>, Task> handler)
+        public virtual IDisposable Subscribe(long? checkpoint, Func<IReadOnlyList<Transaction>, Task> handler)
         {
             if (handler == null)
             {
