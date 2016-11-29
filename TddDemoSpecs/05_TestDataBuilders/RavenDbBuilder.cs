@@ -1,13 +1,12 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LiquidProjections.ExampleHost;
-using Raven.Client;
 using Raven.Client.Embedded;
 using Raven.Client.Indexes;
 
 namespace ExampleHost.TddDemoSpecs._05_TestDataBuilders
 {
-    internal class RavenDbBuilder
+    internal class RavenDbBuilder : TestDataBuilder<Task<EmbeddableDocumentStore>>
     {
         private readonly EmbeddableDocumentStore store = new EmbeddableDocumentStore();
         private readonly List<object> documents = new List<object>();
@@ -38,7 +37,7 @@ namespace ExampleHost.TddDemoSpecs._05_TestDataBuilders
             return this;
         }
 
-        public async Task<IDocumentStore> Build()
+        protected override async Task<EmbeddableDocumentStore> OnBuild()
         {
             store.Initialize();
 

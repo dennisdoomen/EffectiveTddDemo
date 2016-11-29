@@ -61,7 +61,7 @@ namespace ExampleHost.TddDemoSpecs._07_BDD_Chill
             }
 
             [Fact]
-            public async Task It_should_be_included_in_the_active_count()
+            public async Task Then_it_should_be_included_in_the_active_count()
             {
                 var appBuilder = new AppBuilder();
                 appBuilder.UseStatistics(() => The<IDocumentStore>().OpenAsyncSession());

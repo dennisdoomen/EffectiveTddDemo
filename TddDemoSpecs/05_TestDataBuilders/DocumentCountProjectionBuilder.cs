@@ -3,7 +3,7 @@ using LiquidProjections.ExampleHost;
 
 namespace ExampleHost.TddDemoSpecs._05_TestDataBuilders
 {
-    public class DocumentCountProjectionBuilder
+    public class DocumentCountProjectionBuilder : TestDataBuilder<DocumentCountProjection>
     {
         private string number = "";
         private Guid countryCode;
@@ -22,7 +22,7 @@ namespace ExampleHost.TddDemoSpecs._05_TestDataBuilders
             return this;
         }
 
-        public DocumentCountProjection Build()
+        protected override DocumentCountProjection OnBuild()
         {
             string id = (number.Length > 0) ? number : (++nextNumber).ToString();
             return new DocumentCountProjection

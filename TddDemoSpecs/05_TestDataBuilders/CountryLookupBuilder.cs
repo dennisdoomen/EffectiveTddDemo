@@ -3,7 +3,7 @@ using LiquidProjections.ExampleHost;
 
 namespace ExampleHost.TddDemoSpecs._05_TestDataBuilders
 {
-    public class CountryLookupBuilder
+    public class CountryLookupBuilder : TestDataBuilder<CountryLookup>
     {
         private Guid code = Guid.NewGuid();
         private string name = Guid.NewGuid().ToString();
@@ -20,7 +20,7 @@ namespace ExampleHost.TddDemoSpecs._05_TestDataBuilders
             return this;
         }
 
-        public CountryLookup Build()
+        protected override CountryLookup OnBuild()
         {
             return new CountryLookup
             {

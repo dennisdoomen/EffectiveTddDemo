@@ -62,7 +62,7 @@ namespace ExampleHost.TddDemoSpecs._08_Assertions
             }
 
             [Fact]
-            public async Task It_should_be_included_in_the_active_count()
+            public async Task Then_it_should_be_included_in_the_active_count()
             {
                 var appBuilder = new AppBuilder();
                 appBuilder.UseStatistics(() => The<IDocumentStore>().OpenAsyncSession());

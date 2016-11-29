@@ -59,7 +59,7 @@ namespace ExampleHost.TddDemoSpecs._09_RelevantAssertions
                 WhenAction.ShouldThrow<ProjectionException>()
                     .Where(e => e.CurrentEvent == The<EventEnvelope>())
                     .WithInnerException<InvalidOperationException>()
-                    .WithInnerMessage("You can't do this at this moment.");
+                    .WithInnerMessage("*moment*");
             }
         }
     }

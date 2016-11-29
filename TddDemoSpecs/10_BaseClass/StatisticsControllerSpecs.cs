@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Chill;
+using ExampleHost.TddDemoSpecs._05_TestDataBuilders;
 using FluentAssertions;
 using FluentAssertions.Json;
 using LiquidProjections;
@@ -81,7 +82,7 @@ namespace ExampleHost.TddDemoSpecs._10_BaseClass
             }
 
             [Fact]
-            public async Task It_should_count_that_contract_as_a_live_document()
+            public async Task Then_it_should_count_that_contract_as_a_live_document()
             {
                 HttpResponseMessage response = await The<HttpClient>().GetAsync(
                     $"http://localhost/api/Statistics/CountsPerState?country={countryCode}&kind=Filming");

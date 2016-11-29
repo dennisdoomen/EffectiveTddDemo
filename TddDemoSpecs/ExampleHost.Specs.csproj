@@ -109,13 +109,12 @@
     <Compile Include="05_TestDataBuilders\DocumentCountProjectionBuilder.cs" />
     <Compile Include="05_TestDataBuilders\RavenDbBuilder.cs" />
     <Compile Include="05_TestDataBuilders\StatisticsControllerSpecs.cs" />
+    <Compile Include="05_TestDataBuilders\TestDataBuilder.cs" />
     <Compile Include="06_BDD\SpecificationContext.cs" />
     <Compile Include="06_BDD\StatisticsControllerSpecs.cs" />
     <Compile Include="07_BDD_Chill\StatisticsControllerSpecs.cs" />
     <Compile Include="08_Assertions\StatisticsControllerSpecs.cs" />
     <Compile Include="09_RelevantAssertions\ProjectorSpecs.cs" />
-    <Compile Include="10_BaseClass\CountryLookupBuilder.cs" />
-    <Compile Include="10_BaseClass\DocumentCountProjectionBuilder.cs" />
     <Compile Include="10_BaseClass\StatisticsControllerSpecs.cs" />
     <Compile Include="11_InitialEvents\StatisticsControllerSpecs.cs" />
     <Compile Include="12_ObjectMothers\ContractBuilder.cs" />

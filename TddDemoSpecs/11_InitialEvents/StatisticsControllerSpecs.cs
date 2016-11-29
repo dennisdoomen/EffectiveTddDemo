@@ -94,7 +94,7 @@ namespace ExampleHost.TddDemoSpecs._11_InitialEvents
             }
 
             [Fact]
-            public async Task It_should_count_that_contract_as_a_live_document()
+            public async Task Then_it_should_count_that_contract_as_a_live_document()
             {
                 HttpResponseMessage response = await The<HttpClient>().GetAsync(
                     $"http://localhost/api/Statistics/CountsPerState?country={countryCode}&kind=Filming");
