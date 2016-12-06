@@ -18,9 +18,9 @@ namespace ExampleHost.TddDemoSpecs._10_BaseClass
 {
     namespace StatisticsControllerSpecs
     {
-        public class Given_a_raven_projector_with_an_in_memory_event_source : GivenWhenThen
+        public class Given_a_http_controller_talking_to_an_in_memory_event_store : GivenWhenThen
         {
-            public Given_a_raven_projector_with_an_in_memory_event_source()
+            public Given_a_http_controller_talking_to_an_in_memory_event_store()
             {
                 Given(async () =>
                 {
@@ -46,7 +46,7 @@ namespace ExampleHost.TddDemoSpecs._10_BaseClass
             }
         }
 
-        public class When_a_contract_is_active : Given_a_raven_projector_with_an_in_memory_event_source
+        public class When_a_contract_is_active : Given_a_http_controller_talking_to_an_in_memory_event_store
         {
             readonly Guid countryCode = Guid.NewGuid();
 
