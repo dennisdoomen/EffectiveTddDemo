@@ -7,7 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{866E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleHost", "Samples\ExampleHost\ExampleHost.csproj", "{1B10C576-5212-402E-AC19-8CA1547E3F34}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleHost.Specs", "TddDemoSpecs\ExampleHost.Specs.csproj", "{9F948E7D-050E-4675-B536-0275BD2E47B5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleHost.Specs", "Tests\ExampleHost.Specs\ExampleHost.Specs.csproj", "{9F948E7D-050E-4675-B536-0275BD2E47B5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

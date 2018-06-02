@@ -50,7 +50,7 @@ task RunTests -depends Compile -Description "Running all unit tests." {
 	}
 
 	exec { . $xunitRunner `
-        "$BaseDirectory\TddDemoSpecs\bin\Release\ExampleHost.TddDemoSpecs.dll" `
+        "$BaseDirectory\Tests\ExampleHost.Specs\bin\Release\ExampleHost.Specs.dll" `
         -html "$ArtifactsDirectory\xunit.html" -parallel assemblies }
 }
 
