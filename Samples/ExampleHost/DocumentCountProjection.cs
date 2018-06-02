@@ -5,7 +5,7 @@ using LiquidProjections.RavenDB;
 
 namespace LiquidProjections.ExampleHost
 {
-    public class DocumentCountProjection : IHaveIdentity
+    public class DocumentCountProjection
     {
         public DocumentCountProjection()
         {

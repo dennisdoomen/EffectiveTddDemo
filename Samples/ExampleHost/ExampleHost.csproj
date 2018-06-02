@@ -12,6 +12,7 @@
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -23,7 +24,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>false</UseVSHostingProcess>
-    <LangVersion>6</LangVersion>
+    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -37,6 +38,18 @@
     <LangVersion>6</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="LiquidProjections, Version=3.1.1.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\packages\LiquidProjections.3.1.1\lib\netstandard1.1\LiquidProjections.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="LiquidProjections.Abstractions, Version=3.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\packages\LiquidProjections.Abstractions.3.0.0\lib\netstandard1.1\LiquidProjections.Abstractions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="LiquidProjections.RavenDB, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\packages\LiquidProjections.RavenDB.3.0.1\lib\net45\LiquidProjections.RavenDB.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.Owin, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Owin.3.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
       <Private>True</Private>
@@ -65,16 +78,16 @@
       <HintPath>..\..\packages\AutoFixture.3.50.2\lib\net40\Ploeh.AutoFixture.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Raven.Abstractions, Version=3.0.0.0, Culture=neutral, PublicKeyToken=37f41c7f99471593, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\RavenDB.Database.3.0.30153\lib\net45\Raven.Abstractions.dll</HintPath>
+    <Reference Include="Raven.Abstractions, Version=3.5.4.0, Culture=neutral, PublicKeyToken=37f41c7f99471593">
+      <HintPath>..\..\packages\RavenDB.Database.3.5.4\lib\net45\Raven.Abstractions.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Raven.Client.Lightweight, Version=3.0.0.0, Culture=neutral, PublicKeyToken=37f41c7f99471593, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\RavenDB.Client.3.0.30153\lib\net45\Raven.Client.Lightweight.dll</HintPath>
+    <Reference Include="Raven.Client.Lightweight, Version=3.5.4.0, Culture=neutral, PublicKeyToken=37f41c7f99471593">
+      <HintPath>..\..\packages\RavenDB.Client.3.5.4\lib\net45\Raven.Client.Lightweight.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Raven.Database, Version=3.0.0.0, Culture=neutral, PublicKeyToken=37f41c7f99471593, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\RavenDB.Database.3.0.30153\lib\net45\Raven.Database.dll</HintPath>
+    <Reference Include="Raven.Database, Version=3.5.4.0, Culture=neutral, PublicKeyToken=37f41c7f99471593">
+      <HintPath>..\..\packages\RavenDB.Database.3.5.4\lib\net45\Raven.Database.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -138,28 +151,10 @@
     <Compile Include="TinyIocWebApiDependencyResolver.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
     <None Include="ExampleEvents.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
-    <None Include="Raven.Studio.Html5.zip">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Src\LiquidProjections.NEventStore\LiquidProjections.NEventStore.csproj">
-      <Project>{99faca9d-d5e8-4ef4-b552-eaea15b75b0d}</Project>
-      <Name>LiquidProjections.NEventStore</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Src\LiquidProjections.RavenDB\LiquidProjections.RavenDB.csproj">
-      <Project>{fbe5fb82-a7ec-4d30-9295-08d107f448bb}</Project>
-      <Name>LiquidProjections.RavenDB</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Src\LiquidProjections\LiquidProjections.csproj">
-      <Project>{20506f22-9a20-4c07-b3df-163ca338030f}</Project>
-      <Name>LiquidProjections</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

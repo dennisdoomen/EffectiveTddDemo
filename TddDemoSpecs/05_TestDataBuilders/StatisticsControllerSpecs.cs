@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using LiquidProjections;
 using LiquidProjections.ExampleHost;
 using LiquidProjections.ExampleHost.Events;
+using LiquidProjections.Testing;
 using Microsoft.Owin.Builder;
 using Newtonsoft.Json.Linq;
 using Raven.Client;
@@ -24,7 +25,7 @@ namespace ExampleHost.TddDemoSpecs._05_TestDataBuilders
 
             IDocumentStore ravenDb = await new RavenDbBuilder().AsInMemory.Build();
 
-            var projector = new CountsProjector(new Dispatcher(eventStore),
+            var projector = new CountsProjector(new Dispatcher(eventStore.Subscribe),
                 () => ravenDb.OpenAsyncSession());
 
             await projector.Start();
