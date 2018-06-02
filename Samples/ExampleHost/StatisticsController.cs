@@ -24,6 +24,7 @@ namespace LiquidProjections.ExampleHost
             {
                 var staticResults = await session
                     .Query<Documents_CountsByStaticState.Result, Documents_CountsByStaticState>()
+                    .Customize(c => c.WaitForNonStaleResultsAsOfNow())
                     .Where(x => x.Kind == kind && x.Country == country)
                     .ToListAsync();
 

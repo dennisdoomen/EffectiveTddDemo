@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using LiquidProjections;
 using LiquidProjections.ExampleHost;
 using LiquidProjections.ExampleHost.Events;
+using LiquidProjections.Testing;
 using Microsoft.Owin.Builder;
 using Newtonsoft.Json.Linq;
 using Raven.Client.Document;
@@ -38,7 +39,7 @@ namespace ExampleHost.TddDemoSpecs._03_BetterNaming
 
             IndexCreation.CreateIndexes(typeof(Program).Assembly, ravenDb);
 
-            var projector = new CountsProjector(new Dispatcher(eventStore),
+            var projector = new CountsProjector(new Dispatcher(eventStore.Subscribe),
                 () => ravenDb.OpenAsyncSession());
 
             await projector.Start();

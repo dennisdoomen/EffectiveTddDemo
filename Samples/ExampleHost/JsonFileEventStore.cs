@@ -5,11 +5,12 @@ using System.IO.Compression;
 using System.Linq;
 using System.Runtime.Serialization.Formatters;
 using System.Threading.Tasks;
+using LiquidProjections.Abstractions;
 using Newtonsoft.Json;
 
 namespace LiquidProjections.ExampleHost
 {
-    public class JsonFileEventStore : IEventStore, IDisposable
+    public class JsonFileEventStore : IDisposable
     {
         private const int AverageEventsPerTransaction = 6;
         private readonly int pageSize;
@@ -25,9 +26,9 @@ namespace LiquidProjections.ExampleHost
             entryQueue = new Queue<ZipArchiveEntry>(zip.Entries.Where(e => e.Name.EndsWith(".json")));
         }
 
-        public IDisposable Subscribe(long? checkpoint, Func<IReadOnlyList<Transaction>, Task> handler)
+        public IDisposable Subscribe(long? lastProcessedCheckpoint, LiquidProjections.Abstractions.Subscriber subscriber, string subscriptionId)
         {
-            var subscriber = new Subscriber(checkpoint ?? 0, handler);
+            var innerSubscriber = new Subscriber(subscriptionId, lastProcessedCheckpoint ?? 0, subscriber.HandleTransactions);
             
             Task.Run(async () =>
             {
@@ -39,13 +40,13 @@ namespace LiquidProjections.ExampleHost
                     // Start loading the next page on a separate thread while we have the subscriber handle the previous transactions.
                     loader = LoadNextPageAsync();
 
-                    await subscriber.Send(transactions);
+                    await innerSubscriber.Send(transactions);
 
                     transactions = await loader;
                 }
             });
 
-            return subscriber;
+            return innerSubscriber;
         }
 
         private Task<Transaction[]> LoadNextPageAsync()
@@ -107,12 +108,14 @@ namespace LiquidProjections.ExampleHost
 
         internal class Subscriber : IDisposable
         {
+            private readonly string id;
             private readonly long fromCheckpoint;
-            private readonly Func<IReadOnlyList<Transaction>, Task> handler;
+            private readonly Func<IReadOnlyList<Transaction>, SubscriptionInfo, Task> handler;
             private bool disposed;
 
-            public Subscriber(long fromCheckpoint, Func<IReadOnlyList<Transaction>, Task> handler)
+            public Subscriber(string id, long fromCheckpoint, Func<IReadOnlyList<Transaction>, SubscriptionInfo, Task> handler)
             {
+                this.id = id;
                 this.fromCheckpoint = fromCheckpoint;
                 this.handler = handler;
             }
@@ -124,7 +127,11 @@ namespace LiquidProjections.ExampleHost
                     Transaction[] readOnlyList = transactions.Where(t => t.Checkpoint >= fromCheckpoint).ToArray();
                     if (readOnlyList.Length > 0)
                     {
-                        await handler(readOnlyList);
+                        await handler(readOnlyList, new SubscriptionInfo
+                        {
+                            Subscription = this,
+                            Id = id
+                        });
                     }
                 }
                 else

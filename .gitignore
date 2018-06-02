@@ -171,3 +171,10 @@ Output/*
 **/*.sln.ide/**
 _NCrunch_LiquidProjections/
 Artifacts/**
+
+# User-specific stuff:
+.idea
+
+# Visual Studio
+**/.vs/**
+.vs/**

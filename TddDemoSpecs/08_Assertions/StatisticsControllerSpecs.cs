@@ -8,6 +8,7 @@ using FluentAssertions;
 using LiquidProjections;
 using LiquidProjections.ExampleHost;
 using LiquidProjections.ExampleHost.Events;
+using LiquidProjections.Testing;
 using Microsoft.Owin.Builder;
 using Newtonsoft.Json.Linq;
 using Raven.Client;
@@ -29,7 +30,7 @@ namespace ExampleHost.TddDemoSpecs._08_Assertions
 
                     UseThe(await new RavenDbBuilder().AsInMemory.Build());
 
-                    var projector = new CountsProjector(new Dispatcher(The<MemoryEventSource>()),
+                    var projector = new CountsProjector(new Dispatcher(The<MemoryEventSource>().Subscribe),
                         () => The<IDocumentStore>().OpenAsyncSession());
 
                     await projector.Start();

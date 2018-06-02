@@ -2,7 +2,9 @@
 using Chill;
 using FluentAssertions;
 using LiquidProjections;
+using LiquidProjections.Abstractions;
 using LiquidProjections.ExampleHost.Events;
+using LiquidProjections.Testing;
 using Xunit;
 
 namespace ExampleHost.TddDemoSpecs._09_RelevantAssertions
@@ -13,7 +15,7 @@ namespace ExampleHost.TddDemoSpecs._09_RelevantAssertions
         {
             protected EventMapBuilder<ProjectionContext> MapBuilder;
 
-            public Given_a_projector_with_an_in_memory_event_source()
+            protected Given_a_projector_with_an_in_memory_event_source()
             {
                 Given(() =>
                 {
@@ -47,19 +49,22 @@ namespace ExampleHost.TddDemoSpecs._09_RelevantAssertions
                         }
                     });
 
-                    The<MemoryEventSource>().Subscribe(0, Subject.Handle);
+                    The<MemoryEventSource>().Subscribe(0, new Subscriber
+                    {
+                        HandleTransactions = (transactions, info) => Subject.Handle(transactions)
+                    }, "id");
                 });
 
-                When(() => The<MemoryEventSource>().Write(The<Transaction>()), deferedExecution: true);
+                WhenLater(() => The<MemoryEventSource>().Write(The<Transaction>()));
             }
 
             [Fact]
             public void Then_it_should_wrap_the_exception_into_a_projection_exception()
             {
-                WhenAction.ShouldThrow<ProjectionException>()
+                WhenAction.Should().Throw<ProjectionException>()
                     .Where(e => e.CurrentEvent == The<EventEnvelope>())
                     .WithInnerException<InvalidOperationException>()
-                    .WithInnerMessage("*moment*");
+                    .WithMessage("*moment*");
             }
         }
     }

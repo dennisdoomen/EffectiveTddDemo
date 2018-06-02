@@ -15,7 +15,7 @@ namespace LiquidProjections.ExampleHost
 
             EmbeddableDocumentStore store = BuildDocumentStore(".\\", 9001);
 
-            var dispatcher = new Dispatcher(eventStore);
+            var dispatcher = new Dispatcher(eventStore.Subscribe);
 
             var bootstrapper = new CountsProjector(dispatcher, store.OpenAsyncSession);
 
@@ -47,7 +47,6 @@ namespace LiquidProjections.ExampleHost
                 {
                     DisableInMemoryIndexing = true,
                     DataDirectory = dataDir,
-                    CountersDataDirectory = Path.Combine(rootDir, "Counters"),
                     CompiledIndexCacheDirectory = Path.Combine(rootDir, "CompiledIndexCache"),
                     DefaultStorageTypeName = "Esent",
                 },

@@ -5,10 +5,12 @@ using System.Threading.Tasks;
 using Chill;
 using ExampleHost.TddDemoSpecs._12_ObjectMothers;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using FluentAssertions.Json;
 using LiquidProjections;
 using LiquidProjections.ExampleHost;
 using LiquidProjections.ExampleHost.Events;
+using LiquidProjections.Testing;
 using Microsoft.Owin.Builder;
 using Newtonsoft.Json.Linq;
 using Raven.Client;
@@ -27,7 +29,7 @@ namespace ExampleHost.TddDemoSpecs._11_InitialEvents
                     UseThe(new MemoryEventSource());
                     UseThe(await new RavenDbBuilder().AsInMemory.Build());
 
-                    var projector = new CountsProjector(new Dispatcher(The<MemoryEventSource>()),
+                    var projector = new CountsProjector(new Dispatcher(The<MemoryEventSource>().Subscribe),
                         () => The<IDocumentStore>().OpenAsyncSession());
 
                     await projector.Start();
@@ -72,7 +74,7 @@ namespace ExampleHost.TddDemoSpecs._11_InitialEvents
                     {
                         DocumentNumber = "123",
                         From = 1.January(2016),
-                        To = 1.January(2017),
+                        To = DateTime.Now.Add(1.Days()),
                         Sequence = 1
                     });
 

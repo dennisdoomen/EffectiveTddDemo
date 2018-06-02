@@ -4,9 +4,11 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Chill;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using FluentAssertions.Json;
 using LiquidProjections;
 using LiquidProjections.ExampleHost;
+using LiquidProjections.Testing;
 using Microsoft.Owin.Builder;
 using Newtonsoft.Json.Linq;
 using Raven.Client;
@@ -25,7 +27,7 @@ namespace ExampleHost.TddDemoSpecs._12_ObjectMothers
                     UseThe(new MemoryEventSource());
                     UseThe(await new RavenDbBuilder().AsInMemory.Build());
 
-                    var projector = new CountsProjector(new Dispatcher(The<MemoryEventSource>()),
+                    var projector = new CountsProjector(new Dispatcher(The<MemoryEventSource>().Subscribe),
                         () => The<IDocumentStore>().OpenAsyncSession());
 
                     await projector.Start();
@@ -57,7 +59,7 @@ namespace ExampleHost.TddDemoSpecs._12_ObjectMothers
                 {
                     await A.Country("Netherlands").Was.RegisteredAs(countryCode);
                     await A.Contract("123").OfKind("Filming").InCountry(countryCode).Was.Negotiated();
-                    await The.Contract("123").Was.ApprovedForThePeriod(1.January(2016), 1.January(2017));
+                    await The.Contract("123").Was.ApprovedForThePeriod(1.January(2016), DateTime.Now.Add(1.Days()));
                 });
 
                 When(async () =>
