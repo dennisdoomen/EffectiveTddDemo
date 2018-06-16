@@ -1,1 +1,3 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/85nutadfiq44bwq1?svg=true)](https://ci.appveyor.com/project/dennisdoomen/liquidprojections)
+
+Prerequisites
+- .NET Core 2.1.6 or higher. Installing .NET Core 2.2 does not work.
