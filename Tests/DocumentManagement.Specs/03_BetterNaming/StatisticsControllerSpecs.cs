@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using DocumentManagement.Specs._05_TestDataBuilders;
 using LiquidProjections;
 using LiquidProjections.ExampleHost;
 using LiquidProjections.ExampleHost.Events;
@@ -25,8 +26,7 @@ namespace DocumentManagement.Specs._03_BetterNaming
             // Arrange
             var eventSource = new MemoryEventSource();
 
-            using (var ravenServer = new InMemoryRavenTestDriver())
-            using (var documentStore = ravenServer.GetDocumentStore())
+            using (var documentStore = InMemoryRavenTestDriver.Instance.GetDocumentStore())
             {
                 IndexCreation.CreateIndexes(typeof(CountsProjector).Assembly, documentStore);
 
@@ -88,14 +88,6 @@ namespace DocumentManagement.Specs._03_BetterNaming
                     Assert.Equal(newState, jtokenElement.Value<string>("State"));
                     Assert.Equal(1, jtokenElement.Value<int>("Count"));
                 }
-            }
-        }
-        
-        private class InMemoryRavenTestDriver : RavenTestDriver
-        {
-            public IDocumentStore GetDocumentStore()
-            {
-                return base.GetDocumentStore();
             }
         }
     }
