@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Indexes;
-using Raven.TestDriver;
 
 namespace DocumentManagement.Specs._05_TestDataBuilders
 {
@@ -10,25 +9,12 @@ namespace DocumentManagement.Specs._05_TestDataBuilders
     {
         public IDocumentStore Build()
         {
-            var ravenDriver = new InMemoryRavenTestDriver();
-            var ravenDbDocumentStore = ravenDriver.GetDocumentStore();
+            var testDriver = InMemoryRavenTestDriver.Instance;
+            var ravenDbDocumentStore = testDriver.GetDocumentStore();
             {
                 IndexCreation.CreateIndexes(typeof(CountsProjector).Assembly, ravenDbDocumentStore);
 
-                ravenDbDocumentStore.AfterDispose += delegate(object sender, EventArgs args)
-                {
-                    ravenDriver.Dispose();
-                };
-
                 return ravenDbDocumentStore;
-            }
-        }
-
-        private class InMemoryRavenTestDriver : RavenTestDriver
-        {
-            public IDocumentStore GetDocumentStore()
-            {
-                return base.GetDocumentStore();
             }
         }
     }

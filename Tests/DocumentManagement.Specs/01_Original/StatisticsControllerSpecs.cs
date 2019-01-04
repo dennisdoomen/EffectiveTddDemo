@@ -27,8 +27,7 @@ namespace DocumentManagement.Specs._01_Original
         {
             var memoryEventSource = new MemoryEventSource();
 
-            using (var inMemoryRavenTestDriver = new InMemoryRavenDatabase())
-            using (IDocumentStore ravenDbDocumentStore = inMemoryRavenTestDriver.GetDocumentStore())
+            using (IDocumentStore ravenDbDocumentStore = InMemoryRavenTestDriver.Instance.GetDocumentStore())
             {
                 IndexCreation.CreateIndexes(typeof(CountsProjector).Assembly, ravenDbDocumentStore);
 
@@ -91,12 +90,5 @@ namespace DocumentManagement.Specs._01_Original
             }
         }
 
-        private class InMemoryRavenDatabase : RavenTestDriver
-        {
-            public IDocumentStore GetDocumentStore()
-            {
-                return base.GetDocumentStore();
-            }
-        }
     }
 }
