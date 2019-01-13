@@ -3,9 +3,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using DocumentManagement.Events;
+using DocumentManagement.Statistics;
 using LiquidProjections;
-using LiquidProjections.ExampleHost;
-using LiquidProjections.ExampleHost.Events;
 using LiquidProjections.Testing;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -23,20 +23,13 @@ namespace DocumentManagement.Specs._04_Constants
         public async Task When_a_document_is_activated_it_should_be_included_in_the_active_count()
         {
             // Arrange
-            var eventSource = new MemoryEventSource();
+            var memoryEventSource = new MemoryEventSource();
 
-            using (var documentStore = InMemoryRavenTestDriver.Instance.GetDocumentStore())
+            using (IDocumentStore ravenDbDocumentStore = InMemoryRavenTestDriver.Instance.GetDocumentStore())
             {
-                IndexCreation.CreateIndexes(typeof(CountsProjector).Assembly, documentStore);
-
-                var countsProjector = new CountsProjector(new Dispatcher(eventSource.Subscribe),
-                    () => documentStore.OpenAsyncSession());
-
-                await countsProjector.Start();
-
                 Guid countryCode = Guid.NewGuid();
 
-                using (var session = documentStore.OpenAsyncSession())
+                using (var session = ravenDbDocumentStore.OpenAsyncSession())
                 {
                     await session.StoreAsync(new CountryLookup
                     {
@@ -46,7 +39,7 @@ namespace DocumentManagement.Specs._04_Constants
 
                     await session.StoreAsync(new DocumentCountProjection
                     {
-                        Id = $"DocumentCountProjection/123",
+                        Id = "DocumentCountProjection/123",
                         Country = countryCode,
                         Kind = "Filming"
                     });
@@ -54,20 +47,26 @@ namespace DocumentManagement.Specs._04_Constants
                     await session.SaveChangesAsync();
                 }
 
-                // Act
-                await eventSource.Write(new StateTransitionedEvent
-                {
-                    DocumentNumber = "123",
-                    State = "Active"
-                });
+                IStartableModule module = null;
 
-                // Assert
-                var webHostBuilder = new WebHostBuilder()
-                    .Configure(b => b.UseStatistics(documentStore.OpenAsyncSession));
+                var webHostBuilder = new WebHostBuilder().Configure(builder =>
+                {
+                    module = builder.UseDocumentStatisticsModule(ravenDbDocumentStore, new Dispatcher(memoryEventSource.Subscribe));
+                });
 
                 using (var testServer = new TestServer(webHostBuilder))
                 using (var httpClient = testServer.CreateClient())
                 {
+                    await module.Start();
+
+                    // Act
+                    await memoryEventSource.Write(new StateTransitionedEvent
+                    {
+                        DocumentNumber = "123",
+                        State = "Active"
+                    });
+                    
+                    // Assert
                     HttpResponseMessage httpResponseMessage = await httpClient.GetAsync(
                         $"/statistics/CountsPerState?country={countryCode}&kind=Filming");
 

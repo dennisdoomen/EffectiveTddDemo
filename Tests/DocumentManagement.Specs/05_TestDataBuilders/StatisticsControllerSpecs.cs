@@ -2,8 +2,9 @@
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using DocumentManagement.Events;
+using DocumentManagement.Statistics;
 using LiquidProjections;
-using LiquidProjections.ExampleHost.Events;
 using LiquidProjections.Testing;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -25,11 +26,6 @@ namespace DocumentManagement.Specs._05_TestDataBuilders
 
             using (var documentStore = new RavenDocumentStoreBuilder().Build())
             {
-                var projector = new CountsProjector(new Dispatcher(eventStore.Subscribe),
-                    () => documentStore.OpenAsyncSession());
-
-                await projector.Start();
-
                 Guid countryCode = Guid.NewGuid();
 
                 using (var session = documentStore.OpenAsyncSession())
@@ -48,20 +44,26 @@ namespace DocumentManagement.Specs._05_TestDataBuilders
                     await session.SaveChangesAsync();
                 }
 
-                // Act
-                await eventStore.Write(new StateTransitionedEvent
-                {
-                    DocumentNumber = "123",
-                    State = "Active"
-                });
+                IStartableModule module = null;
 
-                // Assert
-                var webHostBuilder = new WebHostBuilder()
-                    .Configure(b => b.UseStatistics(documentStore.OpenAsyncSession));
+                var webHostBuilder = new WebHostBuilder().Configure(b =>
+                {
+                    module = b.UseDocumentStatisticsModule(documentStore, new Dispatcher(eventStore.Subscribe));
+                });
 
                 using (var testServer = new TestServer(webHostBuilder))
                 using (var httpClient = testServer.CreateClient())
                 {
+                    await module.Start();
+                    
+                    // Act
+                    await eventStore.Write(new StateTransitionedEvent
+                    {
+                        DocumentNumber = "123",
+                        State = "Active"
+                    });
+                    
+                    // Assert
                     HttpResponseMessage response = await httpClient.GetAsync(
                         $"http://localhost/Statistics/CountsPerState?country={countryCode}&kind=Filming");
 

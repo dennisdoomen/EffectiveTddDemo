@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using DocumentManagement.Statistics;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Indexes;
 
