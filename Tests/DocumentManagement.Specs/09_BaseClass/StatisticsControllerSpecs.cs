@@ -84,7 +84,7 @@ namespace DocumentManagement.Specs._09_BaseClass
             }
 
             [Fact]
-            public async Task Then_it_should_count_that_contract_as_a_live_document()
+            public async Task Then_it_should_be_included_in_the_active_count()
             {
                 HttpResponseMessage response = await The<HttpClient>().GetAsync(
                     $"http://localhost/Statistics/CountsPerState?country={countryCode}&kind=Filming");
