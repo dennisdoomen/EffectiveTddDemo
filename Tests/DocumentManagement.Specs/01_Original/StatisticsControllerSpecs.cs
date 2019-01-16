@@ -3,9 +3,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using DocumentManagement.Events;
+using DocumentManagement.Statistics;
 using LiquidProjections;
-using LiquidProjections.ExampleHost;
-using LiquidProjections.ExampleHost.Events;
 using LiquidProjections.Testing;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -23,19 +23,12 @@ namespace DocumentManagement.Specs._01_Original
     public class StatisticsControllerSpecs
     {
         [Fact]
-        public async Task When_a_StateTransitionedEvent_is_applied_to_a_DocumentCountProjection_the_controller_should_return_1()
+        public async Task When_a_StateTransitionedEvent_is_applied_to_a_DocumentCountProjection_the_controller_should_return_1_active_document()
         {
             var memoryEventSource = new MemoryEventSource();
 
             using (IDocumentStore ravenDbDocumentStore = InMemoryRavenTestDriver.Instance.GetDocumentStore())
             {
-                IndexCreation.CreateIndexes(typeof(CountsProjector).Assembly, ravenDbDocumentStore);
-
-                var countsProjector = new CountsProjector(new Dispatcher(memoryEventSource.Subscribe),
-                    () => ravenDbDocumentStore.OpenAsyncSession());
-
-                await countsProjector.Start();
-                
                 Guid countryCode = Guid.NewGuid();
                 string documentNumber = "123";
                 string countryName = "Netherlands";
@@ -60,18 +53,24 @@ namespace DocumentManagement.Specs._01_Original
                     await session.SaveChangesAsync();
                 }
 
-                await memoryEventSource.Write(new StateTransitionedEvent
-                {
-                    DocumentNumber = documentNumber,
-                    State = newState
-                });
+                IStartableModule module = null;
 
-                var webHostBuilder = new WebHostBuilder()
-                    .Configure(b => b.UseStatistics(ravenDbDocumentStore.OpenAsyncSession));
+                var webHostBuilder = new WebHostBuilder().Configure(builder =>
+                {
+                    module = builder.UseDocumentStatisticsModule(ravenDbDocumentStore, new Dispatcher(memoryEventSource.Subscribe));
+                });
 
                 using (var testServer = new TestServer(webHostBuilder))
                 using (var httpClient = testServer.CreateClient())
                 {
+                    await module.Start();
+
+                    await memoryEventSource.Write(new StateTransitionedEvent
+                    {
+                        DocumentNumber = documentNumber,
+                        State = newState
+                    });
+                    
                     HttpResponseMessage httpResponseMessage = await httpClient.GetAsync(
                         $"/statistics/CountsPerState?country={countryCode}&kind={kind}");
 

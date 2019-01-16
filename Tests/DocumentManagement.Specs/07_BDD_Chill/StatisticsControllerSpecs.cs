@@ -3,9 +3,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Chill;
+using DocumentManagement.Events;
 using DocumentManagement.Specs._05_TestDataBuilders;
 using LiquidProjections;
-using LiquidProjections.ExampleHost.Events;
 using LiquidProjections.Testing;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -28,12 +28,7 @@ namespace DocumentManagement.Specs._07_BDD_Chill
                     UseThe(new MemoryEventSource());
 
                     SetThe<IDocumentStore>().To(new RavenDocumentStoreBuilder().Build());
-                
-                    var projector = new CountsProjector(new Dispatcher(The<MemoryEventSource>().Subscribe),
-                        () => The<IDocumentStore>().OpenAsyncSession());
-
-                    await projector.Start();
-
+               
                     countryCode = Guid.NewGuid();
 
                     using (var session = The<IDocumentStore>().OpenAsyncSession())
@@ -51,6 +46,18 @@ namespace DocumentManagement.Specs._07_BDD_Chill
 
                         await session.SaveChangesAsync();
                     }
+                    
+                    IStartableModule module = null;
+                    
+                    var webHostBuilder = new WebHostBuilder().Configure(b =>
+                    {
+                        module = b.UseDocumentStatisticsModule(The<IDocumentStore>(), new Dispatcher(The<MemoryEventSource>().Subscribe));
+                    });
+
+                    UseThe(new TestServer(webHostBuilder));
+                    UseThe(The<TestServer>().CreateClient());
+
+                    await module.Start();
                 });
 
                 When(async () =>
@@ -66,26 +73,19 @@ namespace DocumentManagement.Specs._07_BDD_Chill
             [Fact]
             public async Task Then_it_should_be_included_in_the_active_count()
             {
-                var webHostBuilder = new WebHostBuilder()
-                    .Configure(b => b.UseStatistics(The<IDocumentStore>().OpenAsyncSession));
+                HttpResponseMessage response = await The<HttpClient>().GetAsync(
+                    $"http://localhost/Statistics/CountsPerState?country={countryCode}&kind=Filming");
 
-                using (var testServer = new TestServer(webHostBuilder))
-                using (var httpClient = testServer.CreateClient())
-                {
-                    HttpResponseMessage response = await httpClient.GetAsync(
-                        $"http://localhost/Statistics/CountsPerState?country={countryCode}&kind=Filming");
+                string body = await response.Content.ReadAsStringAsync();
 
-                    string body = await response.Content.ReadAsStringAsync();
+                JToken counterElement = JToken.Parse(body).Children().FirstOrDefault();
 
-                    JToken counterElement = JToken.Parse(body).Children().FirstOrDefault();
-
-                    Assert.NotNull(counterElement);
-                    Assert.Equal(countryCode.ToString(), counterElement.Value<string>("Country"));
-                    Assert.Equal("Netherlands", counterElement.Value<string>("CountryName"));
-                    Assert.Equal("Filming", counterElement.Value<string>("Kind"));
-                    Assert.Equal("Active", counterElement.Value<string>("State"));
-                    Assert.Equal(1, counterElement.Value<int>("Count"));
-                }
+                Assert.NotNull(counterElement);
+                Assert.Equal(countryCode.ToString(), counterElement.Value<string>("Country"));
+                Assert.Equal("Netherlands", counterElement.Value<string>("CountryName"));
+                Assert.Equal("Filming", counterElement.Value<string>("Kind"));
+                Assert.Equal("Active", counterElement.Value<string>("State"));
+                Assert.Equal(1, counterElement.Value<int>("Count"));
             }
         }
     }

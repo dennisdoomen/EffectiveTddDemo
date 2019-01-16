@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Chill;
 using DocumentManagement.Specs._05_TestDataBuilders;
+using DocumentManagement.Statistics;
 using ExampleHost.TddDemoSpecs._12_ObjectMothers;
 using FluentAssertions;
 using FluentAssertions.Extensions;
@@ -28,16 +29,18 @@ namespace DocumentManagement.Specs._12_ObjectMothers
 
                     SetThe<IDocumentStore>().To(new RavenDocumentStoreBuilder().Build());
 
-                    var projector = new CountsProjector(new Dispatcher(The<MemoryEventSource>().Subscribe),
-                        () => The<IDocumentStore>().OpenAsyncSession());
+                    IStartableModule module = null;
 
-                    await projector.Start();
-
-                    var webHostBuilder = new WebHostBuilder()
-                        .Configure(b => b.UseStatistics(The<IDocumentStore>().OpenAsyncSession));
+                    var webHostBuilder = new WebHostBuilder().Configure(b =>
+                    {
+                        module = b.UseDocumentStatisticsModule(The<IDocumentStore>(),
+                            new Dispatcher(The<MemoryEventSource>().Subscribe));
+                    });
 
                     UseThe(new TestServer(webHostBuilder));
                     UseThe(The<TestServer>().CreateClient());
+
+                    await module.Start();
                 });
             }
 
@@ -70,7 +73,7 @@ namespace DocumentManagement.Specs._12_ObjectMothers
             }
 
             [Fact]
-            public async Task Then_it_should_count_that_contract_as_a_live_document()
+            public async Task Then_it_should_be_included_in_the_active_count()
             {
                 HttpResponseMessage response = await The<HttpClient>().GetAsync(
                     $"http://localhost/Statistics/CountsPerState?country={countryCode}&kind=Filming");
@@ -81,9 +84,6 @@ namespace DocumentManagement.Specs._12_ObjectMothers
                 {
                     new
                     {
-                        Country = countryCode.ToString(),
-                        CountryName = "Netherlands",
-                        Kind = "Filming",
                         State = "Active",
                         Count = 1
                     }

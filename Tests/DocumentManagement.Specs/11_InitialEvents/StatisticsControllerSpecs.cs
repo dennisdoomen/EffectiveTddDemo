@@ -2,11 +2,12 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using Chill;
+using DocumentManagement.Events;
 using DocumentManagement.Specs._05_TestDataBuilders;
+using DocumentManagement.Statistics;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using LiquidProjections;
-using LiquidProjections.ExampleHost.Events;
 using LiquidProjections.Testing;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -28,16 +29,18 @@ namespace DocumentManagement.Specs._11_InitialEvents
 
                     SetThe<IDocumentStore>().To(new RavenDocumentStoreBuilder().Build());
 
-                    var projector = new CountsProjector(new Dispatcher(The<MemoryEventSource>().Subscribe),
-                        () => The<IDocumentStore>().OpenAsyncSession());
+                    IStartableModule module = null;
 
-                    await projector.Start();
-
-                    var webHostBuilder = new WebHostBuilder()
-                        .Configure(b => b.UseStatistics(The<IDocumentStore>().OpenAsyncSession));
+                    var webHostBuilder = new WebHostBuilder().Configure(b =>
+                    {
+                        module = b.UseDocumentStatisticsModule(The<IDocumentStore>(),
+                            new Dispatcher(The<MemoryEventSource>().Subscribe));
+                    });
 
                     UseThe(new TestServer(webHostBuilder));
                     UseThe(The<TestServer>().CreateClient());
+
+                    await module.Start();
                 });
             }
 
@@ -47,11 +50,11 @@ namespace DocumentManagement.Specs._11_InitialEvents
             }
         }
 
-        public class When_a_contract_is_active : Given_a_http_controller_talking_to_an_in_memory_event_store
+        public class When_a_document_is_activated : Given_a_http_controller_talking_to_an_in_memory_event_store
         {
             readonly Guid countryCode = Guid.NewGuid();
 
-            public When_a_contract_is_active()
+            public When_a_document_is_activated()
             {
                 Given(async () =>
                 {
@@ -95,7 +98,7 @@ namespace DocumentManagement.Specs._11_InitialEvents
             }
 
             [Fact]
-            public async Task Then_it_should_count_that_contract_as_a_live_document()
+            public async Task Then_it_should_be_included_in_the_active_count()
             {
                 HttpResponseMessage response = await The<HttpClient>().GetAsync(
                     $"http://localhost/Statistics/CountsPerState?country={countryCode}&kind=Filming");
@@ -106,9 +109,6 @@ namespace DocumentManagement.Specs._11_InitialEvents
                 {
                     new
                     {
-                        Country = countryCode.ToString(),
-                        CountryName = "Netherlands",
-                        Kind = "Filming",
                         State = "Active",
                         Count = 1
                     }

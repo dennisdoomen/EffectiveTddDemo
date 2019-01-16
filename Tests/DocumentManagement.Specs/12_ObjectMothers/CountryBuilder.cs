@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using LiquidProjections.ExampleHost.Events;
+using DocumentManagement.Events;
 
 namespace ExampleHost.TddDemoSpecs._12_ObjectMothers
 {

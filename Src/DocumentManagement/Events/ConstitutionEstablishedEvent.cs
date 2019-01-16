@@ -1,6 +1,6 @@
 using System;
 
-namespace LiquidProjections.ExampleHost.Events
+namespace DocumentManagement.Events
 {
     internal class ConstitutionEstablishedEvent
     {

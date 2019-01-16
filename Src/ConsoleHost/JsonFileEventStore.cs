@@ -68,14 +68,22 @@ namespace LiquidProjections.ExampleHost
 
                     if (json != null)
                     {
-                        transaction.Events.Add(new EventEnvelope
+                        try
                         {
-                            Body = JsonConvert.DeserializeObject(json, new JsonSerializerSettings
+                            transaction.Events.Add(new EventEnvelope
                             {
-                                TypeNameHandling = TypeNameHandling.All,
-                                TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Full
-                            })
-                        });
+                                Body = JsonConvert.DeserializeObject(json, new JsonSerializerSettings
+                                {
+                                    TypeNameHandling = TypeNameHandling.All,
+                                    TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Full
+                                })
+                            });
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                            throw;
+                        }
                     }
 
                     if ((transaction.Events.Count == AverageEventsPerTransaction) || (json == null))

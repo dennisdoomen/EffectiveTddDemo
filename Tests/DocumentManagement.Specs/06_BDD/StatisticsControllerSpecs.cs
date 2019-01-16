@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using DocumentManagement.Events;
 using DocumentManagement.Specs._05_TestDataBuilders;
 using LiquidProjections;
-using LiquidProjections.ExampleHost.Events;
 using LiquidProjections.Testing;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -21,6 +21,8 @@ namespace DocumentManagement.Specs._06_BDD
             private MemoryEventSource eventStore;
             private IDocumentStore documentStore;
             private Guid countryCode;
+            private TestServer testServer;
+            private HttpClient httpClient;
 
             protected override async Task EstablishContext()
             {
@@ -28,11 +30,6 @@ namespace DocumentManagement.Specs._06_BDD
 
                 documentStore = new RavenDocumentStoreBuilder().Build();
                 
-                var projector = new CountsProjector(new Dispatcher(eventStore.Subscribe),
-                    () => documentStore.OpenAsyncSession());
-
-                await projector.Start();
-
                 countryCode = Guid.NewGuid();
 
                 using (var session = documentStore.OpenAsyncSession())
@@ -50,6 +47,18 @@ namespace DocumentManagement.Specs._06_BDD
 
                     await session.SaveChangesAsync();
                 }
+                
+                IStartableModule module = null;
+
+                var webHostBuilder = new WebHostBuilder().Configure(b =>
+                {
+                    module = b.UseDocumentStatisticsModule(documentStore, new Dispatcher(eventStore.Subscribe));
+                });
+
+                testServer = new TestServer(webHostBuilder);
+                httpClient = testServer.CreateClient();
+
+                await module.Start();
             }
 
             protected override async Task Because()
@@ -64,31 +73,26 @@ namespace DocumentManagement.Specs._06_BDD
             [Fact]
             public async Task It_should_be_included_in_the_active_count()
             {
-                var webHostBuilder = new WebHostBuilder()
-                    .Configure(b => b.UseStatistics(documentStore.OpenAsyncSession));
+                HttpResponseMessage response = await httpClient.GetAsync(
+                    $"http://localhost/Statistics/CountsPerState?country={countryCode}&kind=Filming");
 
-                using (var testServer = new TestServer(webHostBuilder))
-                using (var httpClient = testServer.CreateClient())
-                {
-                    HttpResponseMessage response = await httpClient.GetAsync(
-                        $"http://localhost/Statistics/CountsPerState?country={countryCode}&kind=Filming");
+                string body = await response.Content.ReadAsStringAsync();
 
-                    string body = await response.Content.ReadAsStringAsync();
+                JToken counterElement = JToken.Parse(body).Children().FirstOrDefault();
 
-                    JToken counterElement = JToken.Parse(body).Children().FirstOrDefault();
-
-                    Assert.NotNull(counterElement);
-                    Assert.Equal(countryCode.ToString(), counterElement.Value<string>("Country"));
-                    Assert.Equal("Netherlands", counterElement.Value<string>("CountryName"));
-                    Assert.Equal("Filming", counterElement.Value<string>("Kind"));
-                    Assert.Equal("Active", counterElement.Value<string>("State"));
-                    Assert.Equal(1, counterElement.Value<int>("Count"));
-                }
+                Assert.NotNull(counterElement);
+                Assert.Equal(countryCode.ToString(), counterElement.Value<string>("Country"));
+                Assert.Equal("Netherlands", counterElement.Value<string>("CountryName"));
+                Assert.Equal("Filming", counterElement.Value<string>("Kind"));
+                Assert.Equal("Active", counterElement.Value<string>("State"));
+                Assert.Equal(1, counterElement.Value<int>("Count"));
             }
 
             public void Dispose()
             {
                 documentStore.Dispose();
+                httpClient.Dispose();
+                testServer.Dispose();
             }
         }
     }

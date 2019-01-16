@@ -1,5 +1,5 @@
 ﻿using System;
-using LiquidProjections.ExampleHost;
+using DocumentManagement.Statistics;
 
 namespace DocumentManagement.Specs._05_TestDataBuilders
 {
