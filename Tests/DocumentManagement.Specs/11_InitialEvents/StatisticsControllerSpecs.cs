@@ -109,9 +109,6 @@ namespace DocumentManagement.Specs._11_InitialEvents
                 {
                     new
                     {
-                        Country = countryCode.ToString(),
-                        CountryName = "Netherlands",
-                        Kind = "Filming",
                         State = "Active",
                         Count = 1
                     }

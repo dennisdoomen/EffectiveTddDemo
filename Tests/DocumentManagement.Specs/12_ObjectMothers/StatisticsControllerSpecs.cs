@@ -84,9 +84,6 @@ namespace DocumentManagement.Specs._12_ObjectMothers
                 {
                     new
                     {
-                        Country = countryCode.ToString(),
-                        CountryName = "Netherlands",
-                        Kind = "Filming",
                         State = "Active",
                         Count = 1
                     }
