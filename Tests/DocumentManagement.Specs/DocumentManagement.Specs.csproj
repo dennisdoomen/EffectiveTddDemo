@@ -25,8 +25,4 @@
     <ProjectReference Include="..\..\Src\DocumentManagement\DocumentManagement.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="13_SimplerDeserialization" />
-  </ItemGroup>
-
 </Project>
