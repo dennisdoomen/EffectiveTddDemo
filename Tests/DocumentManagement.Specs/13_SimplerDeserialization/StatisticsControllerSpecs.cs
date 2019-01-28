@@ -58,7 +58,7 @@ namespace DocumentManagement.Specs._13_SimplerDeserialization
             {
                 Given(async () =>
                 {
-                    await A.Country("Netherlands").Was.RegisteredAs(countryCode);
+                    await A.Country().Was.RegisteredAs(countryCode);
                     await A.Contract("123").OfKind("Filming").InCountry(countryCode).Was.Negotiated();
                     await The.Contract("123").Was.ApprovedForThePeriod(1.January(2016), DateTime.Now.Add(1.Days()));
                 });

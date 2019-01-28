@@ -6,12 +6,11 @@ namespace ExampleHost.TddDemoSpecs._12_ObjectMothers
 {
     public class CountryBuilder
     {
-        private readonly string name;
+        private readonly string name = "SomeCountry";
         private readonly Func<object, Task> writeEvent;
 
-        public CountryBuilder(string name, Func<object, Task> writeEvent)
+        public CountryBuilder(Func<object, Task> writeEvent)
         {
-            this.name = name;
             this.writeEvent = writeEvent;
         }
 
