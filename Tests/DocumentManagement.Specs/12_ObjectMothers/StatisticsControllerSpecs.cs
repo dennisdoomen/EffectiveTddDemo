@@ -61,7 +61,7 @@ namespace DocumentManagement.Specs._12_ObjectMothers
             {
                 Given(async () =>
                 {
-                    await A.Country("Netherlands").Was.RegisteredAs(countryCode);
+                    await A.Country().Was.RegisteredAs(countryCode);
                     await A.Contract("123").OfKind("Filming").InCountry(countryCode).Was.Negotiated();
                     await The.Contract("123").Was.ApprovedForThePeriod(1.January(2016), DateTime.Now.Add(1.Days()));
                 });

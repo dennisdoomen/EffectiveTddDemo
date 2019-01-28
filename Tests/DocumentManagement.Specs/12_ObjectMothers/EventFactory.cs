@@ -12,9 +12,9 @@ namespace ExampleHost.TddDemoSpecs._12_ObjectMothers
             this.writeEvent = writeEvent;
         }
 
-        public CountryBuilder Country(string name)
+        public CountryBuilder Country()
         {
-            return new CountryBuilder(name, writeEvent);
+            return new CountryBuilder(writeEvent);
         }
 
         public ContractBuilder Contract(string number)
