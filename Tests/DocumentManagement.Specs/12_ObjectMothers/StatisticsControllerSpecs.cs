@@ -91,7 +91,8 @@ namespace DocumentManagement.Specs._12_ObjectMothers
 
                 object counters = JsonConvert.DeserializeAnonymousType(body, expectation);
 
-                counters.Should().BeEquivalentTo(expectation);            }
+                counters.Should().BeEquivalentTo(expectation);
+            }
         }
     }
 }
