@@ -72,18 +72,10 @@ namespace DocumentManagement.Specs._13_SimplerDeserialization
             [Fact]
             public async Task Then_it_should_be_included_in_the_active_count()
             {
-                var counters = await The<HttpClient>().GetJsonAs(
-                    $"http://localhost/Statistics/CountsPerState?country={countryCode}&kind=Filming", prototypeType:
-                    new[]
-                    {
-                        new
-                        {
-                            State = "",
-                            Count = default(int)
-                        }
-                    });
-
-                counters.Should().BeEquivalentTo(new[]
+                HttpResponseMessage response = await The<HttpClient>().GetAsync(
+                    $"http://localhost/Statistics/CountsPerState?country={countryCode}&kind=Filming");
+                
+                await response.Should().BeEquivalentTo(new[]
                 {
                     new
                     {

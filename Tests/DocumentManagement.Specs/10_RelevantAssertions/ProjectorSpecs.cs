@@ -22,7 +22,7 @@ namespace DocumentManagement.Specs._10_RelevantAssertions
                     UseThe(new MemoryEventSource());
                     MapBuilder = new EventMapBuilder<ProjectionContext>();
 
-                    Container.Set<IEventMapBuilder<ProjectionContext>>(MapBuilder, string.Empty);
+                    WithSubject(_ => new Projector(MapBuilder));
                 });
             }
         }
@@ -44,7 +44,7 @@ namespace DocumentManagement.Specs._10_RelevantAssertions
                         {
                             UseThe(new EventEnvelope
                             {
-                                Body = The<LicenseGrantedEvent>()
+                                Body = new LicenseGrantedEvent()
                             })
                         }
                     });
