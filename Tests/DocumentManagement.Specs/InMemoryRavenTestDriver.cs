@@ -8,13 +8,22 @@ namespace DocumentManagement.Specs
     internal class InMemoryRavenTestDriver : RavenTestDriver
     {
         private static readonly Lazy<InMemoryRavenTestDriver> instance =
-            new Lazy<InMemoryRavenTestDriver>(
-                () => new InMemoryRavenTestDriver(), 
-                LazyThreadSafetyMode.ExecutionAndPublication);
+            new(() =>
+            {
+                ConfigureServer(new TestServerOptions
+                {
+                    FrameworkVersion = "5.0.1"
+                });
+
+                return new InMemoryRavenTestDriver();
+            }, LazyThreadSafetyMode.ExecutionAndPublication);
 
         private InMemoryRavenTestDriver()
         {
+            
         }
+        
+        
 
         public IDocumentStore GetDocumentStore()
         {

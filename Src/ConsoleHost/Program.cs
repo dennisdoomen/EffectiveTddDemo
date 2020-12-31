@@ -3,11 +3,11 @@ using System.Threading.Tasks;
 using DocumentManagement;
 using LiquidProjections;
 using LiquidProjections.ExampleHost;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Conventions;
-using Raven.Client.Documents.Indexes;
 using Raven.Embedded;
 
 namespace ConsoleHost
@@ -16,38 +16,29 @@ namespace ConsoleHost
     {
         public static async Task Main(string[] args)
         {
-            var eventStore = new JsonFileEventStore("ExampleEvents.zip", 100);
-
-            IDocumentStore documentStore = BuildDocumentStore();
-
-            var dispatcher = new Dispatcher(eventStore.Subscribe);
-
-            IStartableModule module = null;
-            
-            IWebHostBuilder hostBuilder = WebHost
-                .CreateDefaultBuilder(args)
-                .UseUrls("http://*:9000")
-                .ConfigureServices(services =>
+            IHostBuilder hostBuilder = Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
                 {
+                    webBuilder.UseStartup<Startup>();
+                    webBuilder.UseUrls("http://*:9000");
+                    webBuilder.ConfigureServices(sc =>
+                    {
+                        var eventStore = new JsonFileEventStore("ExampleEvents.zip", 100);
+                        var dispatcher = new Dispatcher(eventStore.Subscribe);
+                        sc.AddSingleton(dispatcher);
 
-                })
-                .Configure(appBuilder =>
-                {
-                     module = appBuilder.UseDocumentStatisticsModule(documentStore, dispatcher);
+                        sc.AddSingleton<IDocumentStore>(BuildDocumentStore());
+                    });
                 });
-                
 
-            using (var host = hostBuilder.Build())
-            {
-                host.Start();
-                await module.Start();
+            using var host = hostBuilder.Build();
+            
+            Console.WriteLine("The statistics module is running. ");
+            Console.WriteLine(
+                $"Try http://localhost:9000/Statistics/Metrics/CountsPerState?country=6df7e2ac-6f06-420a-a0b5-14fb3865e850&kind=permit");
+            Console.WriteLine($"Examine the Raven DB at http://localhost:9001");
 
-                Console.WriteLine("The statistics module is running. ");
-                Console.WriteLine($"Try http://localhost:9000/Statistics/CountsPerState?country=6df7e2ac-6f06-420a-a0b5-14fb3865e850&kind=permit");
-                Console.WriteLine($"Examine the Raven DB at http://localhost:9001");
-
-                Console.ReadLine();
-            }
+            await host.RunAsync();
         }
 
         private static IDocumentStore BuildDocumentStore()
@@ -56,7 +47,7 @@ namespace ConsoleHost
             {
                 DataDirectory = ".\\",
                 ServerUrl = "http://127.0.0.1:9001",
-                
+                FrameworkVersion = "5.0.1"
             });
 
             IDocumentStore documentStore = EmbeddedServer.Instance.GetDocumentStore(new DatabaseOptions("embedded")

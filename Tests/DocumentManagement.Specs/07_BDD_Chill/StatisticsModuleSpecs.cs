@@ -4,18 +4,21 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Chill;
 using DocumentManagement.Events;
+using DocumentManagement.Modularization;
 using DocumentManagement.Specs._05_TestDataBuilders;
+using DocumentManagement.Statistics;
 using LiquidProjections;
 using LiquidProjections.Testing;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Linq;
 using Raven.Client.Documents;
 using Xunit;
 
 namespace DocumentManagement.Specs._07_BDD_Chill
 {
-    namespace StatisticsControllerSpecs
+    namespace StatisticsModuleSpecs
     {
         public class When_a_document_is_activated : GivenWhenThen
         {
@@ -47,17 +50,15 @@ namespace DocumentManagement.Specs._07_BDD_Chill
                         await session.SaveChangesAsync();
                     }
                     
-                    IStartableModule module = null;
-                    
-                    var webHostBuilder = new WebHostBuilder().Configure(b =>
-                    {
-                        module = b.UseDocumentStatisticsModule(The<IDocumentStore>(), new Dispatcher(The<MemoryEventSource>().Subscribe));
-                    });
+                    var modules = new ModuleRegistry(new StatisticsModule());
+                
+                    var host = new TestHostBuilder()
+                        .Using(The<IDocumentStore>())
+                        .Using(The<MemoryEventSource>())
+                        .WithModules(modules)
+                        .Build();
 
-                    UseThe(new TestServer(webHostBuilder));
-                    UseThe(The<TestServer>().CreateClient());
-
-                    await module.Start();
+                    UseThe(host);
                 });
 
                 When(async () =>
@@ -73,19 +74,21 @@ namespace DocumentManagement.Specs._07_BDD_Chill
             [Fact]
             public async Task Then_it_should_be_included_in_the_active_count()
             {
-                HttpResponseMessage response = await The<HttpClient>().GetAsync(
-                    $"http://localhost/Statistics/CountsPerState?country={countryCode}&kind=Filming");
+                var host = The<IHost>().GetTestClient();
+                
+                HttpResponseMessage response = await host.GetAsync(
+                    $"http://localhost/statistics/metrics/CountsPerState?country={countryCode}&kind=Filming");
 
                 string body = await response.Content.ReadAsStringAsync();
 
                 JToken counterElement = JToken.Parse(body).Children().FirstOrDefault();
 
                 Assert.NotNull(counterElement);
-                Assert.Equal(countryCode.ToString(), counterElement.Value<string>("Country"));
-                Assert.Equal("Netherlands", counterElement.Value<string>("CountryName"));
-                Assert.Equal("Filming", counterElement.Value<string>("Kind"));
-                Assert.Equal("Active", counterElement.Value<string>("State"));
-                Assert.Equal(1, counterElement.Value<int>("Count"));
+                Assert.Equal(countryCode.ToString(), counterElement.Value<string>("country"));
+                Assert.Equal("Netherlands", counterElement.Value<string>("countryName"));
+                Assert.Equal("Filming", counterElement.Value<string>("kind"));
+                Assert.Equal("Active", counterElement.Value<string>("state"));
+                Assert.Equal(1, counterElement.Value<int>("count"));
             }
         }
     }

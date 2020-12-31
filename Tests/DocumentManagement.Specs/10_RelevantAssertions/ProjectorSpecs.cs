@@ -1,71 +1,112 @@
 ﻿using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Chill;
 using DocumentManagement.Events;
+using DocumentManagement.Modularization;
+using DocumentManagement.Specs._05_TestDataBuilders;
+using DocumentManagement.Statistics;
 using FluentAssertions;
 using LiquidProjections;
 using LiquidProjections.Abstractions;
 using LiquidProjections.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
+using Raven.Client.Documents;
 using Xunit;
 
 namespace DocumentManagement.Specs._10_RelevantAssertions
-{
-    namespace ProjectorSpecs
+{ 
+    namespace StatisticsModuleSpecs
     {
-        public class Given_a_projector_with_an_in_memory_event_source : GivenSubject<Projector>
+        public class Given_a_http_controller_talking_to_an_in_memory_event_store : GivenWhenThen
         {
-            protected EventMapBuilder<ProjectionContext> MapBuilder;
-
-            protected Given_a_projector_with_an_in_memory_event_source()
+            protected Given_a_http_controller_talking_to_an_in_memory_event_store()
             {
                 Given(() =>
                 {
                     UseThe(new MemoryEventSource());
-                    MapBuilder = new EventMapBuilder<ProjectionContext>();
 
-                    WithSubject(_ => new Projector(MapBuilder));
+                    SetThe<IDocumentStore>().To(new RavenDocumentStoreBuilder().Build());
+
+                    var modules = new ModuleRegistry(new StatisticsModule());
+                
+                    var host = new TestHostBuilder()
+                        .Using(The<IDocumentStore>())
+                        .Using(The<MemoryEventSource>())
+                        .WithModules(modules)
+                        .Build();
+
+                    UseThe(host);
                 });
+            }
+
+            protected async Task Write(object @event)
+            {
+                await The<MemoryEventSource>().Write(@event);
             }
         }
 
-        public class When_event_handling_fails : Given_a_projector_with_an_in_memory_event_source
+        public class When_a_document_is_activated : Given_a_http_controller_talking_to_an_in_memory_event_store
         {
-            public When_event_handling_fails()
+            readonly Guid countryCode = Guid.NewGuid();
+
+            public When_a_document_is_activated()
             {
-                Given(() =>
+                Given(async () =>
                 {
-                    MapBuilder.Map<LicenseGrantedEvent>().As(_ =>
+                    using (var session = The<IDocumentStore>().OpenAsyncSession())
                     {
-                        throw new InvalidOperationException("You can't do this at this moment.");
-                    });
+                        await session.StoreAsync(new CountryLookupBuilder()
+                            .IdentifiedBy(countryCode)
+                            .Named("Netherlands")
+                            .Build());
 
-                    UseThe(new Transaction
-                    {
-                        Events = new[]
-                        {
-                            UseThe(new EventEnvelope
-                            {
-                                Body = new LicenseGrantedEvent()
-                            })
-                        }
-                    });
+                        await session.StoreAsync(new DocumentCountProjectionBuilder()
+                            .WithNumber("123")
+                            .InCountry(countryCode)
+                            .OfKind("Filming")
+                            .Build());
 
-                    The<MemoryEventSource>().Subscribe(0, new Subscriber
-                    {
-                        HandleTransactions = (transactions, info) => Subject.Handle(transactions)
-                    }, "id");
+                        await session.SaveChangesAsync();
+                    }
                 });
 
-                WhenLater(() => The<MemoryEventSource>().Write(The<Transaction>()));
+                When(async () =>
+                {
+                    await Write(new StateTransitionedEvent
+                    {
+                        DocumentNumber = "123",
+                        State = "Active"
+                    });
+                });
             }
 
             [Fact]
-            public void Then_it_should_wrap_the_exception_into_a_projection_exception()
+            public async Task Then_it_should_be_included_in_the_active_count()
             {
-                WhenAction.Should().Throw<ProjectionException>()
-                    .Where(e => e.CurrentEvent == The<EventEnvelope>())
-                    .WithInnerException<InvalidOperationException>()
-                    .WithMessage("*moment*");
+                var host = The<IHost>().GetTestClient();
+                
+                HttpResponseMessage response = await host.GetAsync(
+                    $"http://localhost/statistics/metrics/CountsPerState?country={countryCode}&kind=Filming");
+
+                string body = await response.Content.ReadAsStringAsync();
+
+                var expectation = new[]
+                {
+                    new
+                    {
+                        State = "Active",
+                        Count = 1
+                    }
+                };
+
+                object counters = JsonConvert.DeserializeAnonymousType(body, expectation);
+
+                counters.Should().BeEquivalentTo(expectation);
             }
         }
     }
+
 }
