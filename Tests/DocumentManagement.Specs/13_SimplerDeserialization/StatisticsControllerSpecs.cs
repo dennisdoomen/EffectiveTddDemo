@@ -2,7 +2,9 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using Chill;
+using DocumentManagement.Modularization;
 using DocumentManagement.Specs._05_TestDataBuilders;
+using DocumentManagement.Statistics;
 using ExampleHost.TddDemoSpecs._12_ObjectMothers;
 using FluentAssertions;
 using FluentAssertions.Extensions;
@@ -10,6 +12,7 @@ using LiquidProjections;
 using LiquidProjections.Testing;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Hosting;
 using Raven.Client.Documents;
 using Xunit;
 
@@ -27,18 +30,15 @@ namespace DocumentManagement.Specs._13_SimplerDeserialization
 
                     SetThe<IDocumentStore>().To(new RavenDocumentStoreBuilder().Build());
 
-                    IStartableModule module = null;
+                    var modules = new ModuleRegistry(new StatisticsModule());
+                
+                    var host = new TestHostBuilder()
+                        .Using(The<IDocumentStore>())
+                        .Using(The<MemoryEventSource>())
+                        .WithModules(modules)
+                        .Build();
 
-                    var webHostBuilder = new WebHostBuilder().Configure(b =>
-                    {
-                        module = b.UseDocumentStatisticsModule(The<IDocumentStore>(),
-                            new Dispatcher(The<MemoryEventSource>().Subscribe));
-                    });
-
-                    UseThe(new TestServer(webHostBuilder));
-                    UseThe(The<TestServer>().CreateClient());
-
-                    await module.Start();
+                    UseThe(host);
                 });
             }
 
@@ -72,8 +72,10 @@ namespace DocumentManagement.Specs._13_SimplerDeserialization
             [Fact]
             public async Task Then_it_should_be_included_in_the_active_count()
             {
-                HttpResponseMessage response = await The<HttpClient>().GetAsync(
-                    $"http://localhost/Statistics/CountsPerState?country={countryCode}&kind=Filming");
+                var host = The<IHost>().GetTestClient();
+                
+                HttpResponseMessage response = await host.GetAsync(
+                    $"http://localhost/statistics/metrics/CountsPerState?country={countryCode}&kind=Filming");
                 
                 await response.Should().BeEquivalentTo(new[]
                 {

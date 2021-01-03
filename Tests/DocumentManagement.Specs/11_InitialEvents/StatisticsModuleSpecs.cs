@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Chill;
 using DocumentManagement.Events;
+using DocumentManagement.Modularization;
 using DocumentManagement.Specs._05_TestDataBuilders;
 using DocumentManagement.Statistics;
 using FluentAssertions;
@@ -11,6 +12,7 @@ using LiquidProjections;
 using LiquidProjections.Testing;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Raven.Client.Documents;
 using Xunit;
@@ -23,24 +25,21 @@ namespace DocumentManagement.Specs._11_InitialEvents
         {
             protected Given_a_http_controller_talking_to_an_in_memory_event_store()
             {
-                Given(async () =>
+                Given(() =>
                 {
                     UseThe(new MemoryEventSource());
 
                     SetThe<IDocumentStore>().To(new RavenDocumentStoreBuilder().Build());
 
-                    IStartableModule module = null;
+                    var modules = new ModuleRegistry(new StatisticsModule());
+                
+                    var host = new TestHostBuilder()
+                        .Using(The<IDocumentStore>())
+                        .Using(The<MemoryEventSource>())
+                        .WithModules(modules)
+                        .Build();
 
-                    var webHostBuilder = new WebHostBuilder().Configure(b =>
-                    {
-                        module = b.UseDocumentStatisticsModule(The<IDocumentStore>(),
-                            new Dispatcher(The<MemoryEventSource>().Subscribe));
-                    });
-
-                    UseThe(new TestServer(webHostBuilder));
-                    UseThe(The<TestServer>().CreateClient());
-
-                    await module.Start();
+                    UseThe(host);
                 });
             }
 
@@ -100,8 +99,10 @@ namespace DocumentManagement.Specs._11_InitialEvents
             [Fact]
             public async Task Then_it_should_be_included_in_the_active_count()
             {
-                HttpResponseMessage response = await The<HttpClient>().GetAsync(
-                    $"http://localhost/Statistics/CountsPerState?country={countryCode}&kind=Filming");
+                var host = The<IHost>().GetTestClient();
+                
+                HttpResponseMessage response = await host.GetAsync(
+                    $"http://localhost/statistics/metrics/CountsPerState?country={countryCode}&kind=Filming");
 
                 string body = await response.Content.ReadAsStringAsync();
 

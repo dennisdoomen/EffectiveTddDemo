@@ -10,8 +10,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nuke.Common" Version="0.14.1" />
+    <PackageReference Include="Nuke.Common" Version="5.0.0" />
     <PackageReference Include="GitVersion.CommandLine.DotNetCore" Version="4.0.1-beta1-49" />
+    <PackageReference Include="RavenDB.Embedded" Version="5.1.0" />
     <PackageReference Include="xunit.runner.console" Version="2.4.1" />
   </ItemGroup>
 

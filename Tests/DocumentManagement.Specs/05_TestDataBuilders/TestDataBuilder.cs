@@ -5,7 +5,7 @@ namespace DocumentManagement.Specs._05_TestDataBuilders
 {
     public abstract class TestDataBuilder<T>
     {
-        private readonly List<Action<T>> modifiers = new List<Action<T>>();
+        private readonly List<Action<T>> modifiers = new();
 
         public T Build()
         {

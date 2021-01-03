@@ -3,16 +3,17 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Raven.Client.Documents;
-using Raven.Client.Documents.Session;
 
 namespace DocumentManagement.Statistics
 {
+    
     [Produces("application/json")]
-    public class StatisticsController : ControllerBase
+    [Route("metrics")]
+    public class MetricsController : ControllerBase
     {
         private readonly GetRavenSession getRavenSession;
 
-        public StatisticsController(GetRavenSession getRavenSession)
+        public MetricsController(GetRavenSession getRavenSession)
         {
             this.getRavenSession = getRavenSession;
         }
