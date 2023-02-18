@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Chill;
@@ -8,13 +7,10 @@ using DocumentManagement.Modularization;
 using DocumentManagement.Specs._05_TestDataBuilders;
 using DocumentManagement.Statistics;
 using FluentAssertions;
-using LiquidProjections;
 using LiquidProjections.Testing;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Raven.Client.Documents;
 using Xunit;
 

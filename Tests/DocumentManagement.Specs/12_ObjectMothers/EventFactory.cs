@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace ExampleHost.TddDemoSpecs._12_ObjectMothers
+namespace DocumentManagement.Specs._12_ObjectMothers
 {
     public class EventFactory
     {
