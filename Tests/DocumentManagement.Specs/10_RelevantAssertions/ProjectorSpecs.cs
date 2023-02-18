@@ -7,8 +7,6 @@ using DocumentManagement.Modularization;
 using DocumentManagement.Specs._05_TestDataBuilders;
 using DocumentManagement.Statistics;
 using FluentAssertions;
-using LiquidProjections;
-using LiquidProjections.Abstractions;
 using LiquidProjections.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;

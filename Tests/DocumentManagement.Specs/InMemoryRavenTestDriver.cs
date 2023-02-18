@@ -12,7 +12,7 @@ namespace DocumentManagement.Specs
             {
                 ConfigureServer(new TestServerOptions
                 {
-                    FrameworkVersion = "5.0.1"
+                    FrameworkVersion = null
                 });
 
                 return new InMemoryRavenTestDriver();

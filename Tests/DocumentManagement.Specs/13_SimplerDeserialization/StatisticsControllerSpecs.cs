@@ -4,13 +4,10 @@ using System.Threading.Tasks;
 using Chill;
 using DocumentManagement.Modularization;
 using DocumentManagement.Specs._05_TestDataBuilders;
+using DocumentManagement.Specs._12_ObjectMothers;
 using DocumentManagement.Statistics;
-using ExampleHost.TddDemoSpecs._12_ObjectMothers;
-using FluentAssertions;
 using FluentAssertions.Extensions;
-using LiquidProjections;
 using LiquidProjections.Testing;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
 using Raven.Client.Documents;
@@ -24,7 +21,7 @@ namespace DocumentManagement.Specs._13_SimplerDeserialization
         {
             protected Given_a_raven_projector_with_an_in_memory_event_source()
             {
-                Given(async () =>
+                Given(() =>
                 {
                     UseThe(new MemoryEventSource());
 
@@ -39,6 +36,7 @@ namespace DocumentManagement.Specs._13_SimplerDeserialization
                         .Build();
 
                     UseThe(host);
+                    return Task.CompletedTask;
                 });
             }
 

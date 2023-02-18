@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using DocumentManagement.Events;
 
-namespace ExampleHost.TddDemoSpecs._12_ObjectMothers
+namespace DocumentManagement.Specs._12_ObjectMothers
 {
     public class ContractBuilder
     {
