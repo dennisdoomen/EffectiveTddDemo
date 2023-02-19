@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Newtonsoft.Json;
 
-namespace DocumentManagement.Specs._13_SimplerDeserialization
+namespace DocumentManagement.Specs._14_SimplerDeserialization_SystemText
 {
     internal static class HttpClientExtensions
     {

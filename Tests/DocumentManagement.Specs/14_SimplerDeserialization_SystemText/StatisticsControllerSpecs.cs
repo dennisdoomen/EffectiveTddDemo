@@ -13,7 +13,7 @@ using Microsoft.Extensions.Hosting;
 using Raven.Client.Documents;
 using Xunit;
 
-namespace DocumentManagement.Specs._13_SimplerDeserialization
+namespace DocumentManagement.Specs._14_SimplerDeserialization_SystemText
 {
     namespace StatisticsControllerSpecs
     {
