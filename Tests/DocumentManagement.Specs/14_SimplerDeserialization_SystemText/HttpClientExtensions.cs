@@ -1,7 +1,7 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace DocumentManagement.Specs._14_SimplerDeserialization_SystemText
 {
@@ -26,7 +26,11 @@ namespace DocumentManagement.Specs._14_SimplerDeserialization_SystemText
         {
             string body = await response.Content.ReadAsStringAsync();
 
-            T actual = JsonConvert.DeserializeAnonymousType(body, expectation);
+            object actual = JsonSerializer.Deserialize(body, expectation.GetType(), new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+            
             actual.Should().BeEquivalentTo(expectation);
         }
     }
